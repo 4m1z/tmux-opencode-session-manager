@@ -85,10 +85,22 @@ if ! octmux has-session -t "=${session}" 2>/dev/null; then
   octmux bind-key "$list_key" run-shell "$DIR_SELF/list.sh"
 fi
 
+# Mode 2 makes the outer tmux encode pasted line feeds as CSI-u sequences,
+# which the nested tmux correctly treats as literal bracketed-paste content.
+# Mode 1 preserves standard keys while retaining enhanced modified keys.
+octmux set-option -g 'terminal-overrides[99]' 'tmux-256color:Eneks=\E[>4;1m'
+
 # Record the directory and origin window so the picker can show the path and
 # jump back to the launching window on the MAIN server.
 octmux set-option -t "$session" @opencode_dir "$path"
 [ -n "$ORIGIN_WINDOW" ] && octmux set-option -t "$session" @opencode_origin "$ORIGIN_WINDOW"
+
+# Stamp an initial state so the picker never shows a fresh session as unknown.
+# The tmux-status plugin (or the API fallback in the picker) refines this on
+# the first opencode event.
+octmux set-option -t "$session" @opencode_state 'idle' 2>/dev/null
+octmux set-option -t "$session" @opencode_state_at "$(date +%s)" 2>/dev/null
+octmux set-option -t "$session" @opencode_detail 'opened' 2>/dev/null
 
 # Attach inside the popup. Detaching leaves the session alive on the dedicated
 # server, preserving opencode state per directory.

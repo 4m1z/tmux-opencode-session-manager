@@ -1,10 +1,22 @@
 // tmux-status — opencode V2 plugin reporting session status to tmux.
 //
+// NOTE ON WHAT THIS FILE IS: this is *not* a tmux plugin. It is a server-side
+// plugin for the opencode background service. opencode auto-loads every file
+// placed in ~/.config/opencode/plugins/ — that folder name is opencode's
+// convention, not ours, which is why this repo keeps the file under its own
+// `plugins/` directory: so you can symlink it straight into opencode's:
+//
+//   ln -s <this-repo>/plugins/tmux-status.ts ~/.config/opencode/plugins/tmux-status.ts
+//   opencode service restart   # required: `opencode reload` won't load new plugin files
+//
 // The tmux-opencode-session-manager keeps one tmux session per project
 // directory on a dedicated tmux server socket (default "opencode-popup").
 // This plugin stamps that tmux session with @opencode_state /
 // @opencode_state_at / @opencode_detail so the picker can show whether each
 // session is working / waiting / idle without scraping pane contents.
+//
+// The plugin is recommended but optional: without it the picker still
+// resolves status through the opencode API and a live-screen fallback.
 //
 // Why this exists (V2 note): plugins run inside the background opencode
 // service, NOT inside the tmux pane, so $TMUX/$TMUX_PANE are unavailable.
@@ -12,8 +24,7 @@
 // the same hash the launcher uses:  oc_<cksum-of-dir>.
 //
 // No imports on purpose: a plain default export with `id` + `setup()` loads
-// in V2 without needing "@opencode/plugin" to resolve (same pattern as
-// rtk.ts in this directory).
+// in V2 without needing "@opencode/plugin" to resolve.
 import { spawnSync } from "node:child_process"
 
 type State = "working" | "waiting" | "idle"

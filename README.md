@@ -94,9 +94,13 @@ Sessions needing attention (`waiting`, `idle`) sort to the top.
 
 ## Status setup (the opencode plugin)
 
-Status is pushed by `plugins/tmux-status.ts` in this repo. Install it with a
-symlink (or copy) into your opencode plugins, then restart the opencode
-service so it loads (`opencode reload` only re-reads config):
+`plugins/tmux-status.ts` in this repo is **not a tmux plugin** — it is a
+server-side plugin for opencode itself, and installing it is what gives the
+picker instant, push-based status. opencode auto-loads every file in
+`~/.config/opencode/plugins/` (that folder name is opencode's convention;
+this repo mirrors it under `plugins/` so the file can be linked straight
+across). Install it, then restart the opencode service so it loads
+(`opencode reload` only re-reads config):
 
 ```sh
 ln -s ~/.config/tmux/plugins/tmux-opencode-session-manager/plugins/tmux-status.ts \

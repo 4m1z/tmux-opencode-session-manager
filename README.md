@@ -89,7 +89,7 @@ How the pieces fit (all state lives in per-session tmux options, keyed by
 stable `oc_<hash>` names, so renames, popup reopening, and multiple clients
 can't duplicate or misroute agents):
 
-- `opencode/plugins/tmux-status.ts` pushes lifecycle events instantly
+- `opencode-tmux-session-status` pushes lifecycle events instantly
   (`working` on tool/prompt/step start, `waiting` on
   `permission.asked`/`question.asked`, `done` on `session.idle`, `error` on
   `session.error`/step failure). It handles both V2 (`payload.properties`)
@@ -155,13 +155,15 @@ Sessions needing attention (`waiting`, `error`, `done`) sort to the top.
 
 ## Status setup (the opencode plugin)
 
-Status is pushed by `opencode/plugins/tmux-status.ts` (symlinked live from
-this repo at `~/.config/opencode/plugins/` — no copy step). It is a native
-**V2** plugin: V1 hook implementations do not run in V2, and V2 plugins
-execute in the background service (outside tmux), so instead of `$TMUX_PANE`
-it maps each event's project directory to the tmux session with the same
-`oc_<cksum-of-dir>` hash the launcher uses, then stamps the session via
-`tmux -L <socket> set-option`:
+Status is pushed by the published [`opencode-tmux-session-status`](https://www.npmjs.com/package/opencode-tmux-session-status)
+plugin. Install it with:
+
+    opencode plugin add opencode-tmux-session-status@latest
+
+It is a native **V2** plugin: it runs in OpenCode's background service,
+outside tmux, so instead of relying on `$TMUX_PANE`, it maps each event's
+project directory to the tmux session with the same `oc_<cksum-of-dir>` hash
+the launcher uses, then stamps the session via `tmux -L <socket> set-option`:
 
 | opencode event(s)                                              | State        | Meaning                   |
 | -------------------------------------------------------------- | ------------ | ------------------------- |
@@ -175,9 +177,10 @@ Tool/permission detail (`tool edit`, `permission ...`) is stored in
 `@opencode_detail` and shown as the last picker column. The plugin takes
 optional `socket` / `prefix` options (defaults `opencode-popup` / `oc_`).
 
-New plugin files load on `opencode service restart` (`opencode reload` only
-re-reads config). The picker does **not** depend on the plugin: without it,
-status still resolves through the opencode API and the live-screen fallback.
+Restart the OpenCode service after installing or updating the plugin
+(`opencode reload` only re-reads config). The picker does **not** depend on the
+plugin: without it, status still resolves through the opencode API and the
+live-screen fallback.
 
 ## Options
 
